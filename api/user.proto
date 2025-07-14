@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package user;
+option go_package = "github.com/Santosh-Sohan/user-service/api;user";
+
+import "google/api/annotations.proto";
+
+message User {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string gender = 4;
+  string date_of_birth = 5;
+  string phone_number = 6;
+  string email = 7;
+  bool is_blocked = 8;
+}
+
+message CreateUserRequest {
+  User user = 1;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string gender = 4;
+  string date_of_birth = 5;
+}
+
+message UpdateContactRequest {
+  string id = 1;
+  string phone_number = 2;
+  string email = 3;
+}
+
+message UserIdRequest {
+  string id = 1;
+}
+
+message EmailOrPhoneRequest {
+  string phone_number = 1;
+  string email = 2;
+}
+
+message UserResponse {
+  User user = 1;
+}
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      post: "/v1/users"
+      body: "user"
+    };
+  }
+
+  rpc UpdateUser(UpdateUserRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      put: "/v1/users"
+      body: "*"
+    };
+  }
+
+  rpc BlockUser(UserIdRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      post: "/v1/users/block"
+      body: "*"
+    };
+  }
+
+  rpc UnblockUser(UserIdRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      post: "/v1/users/unblock"
+      body: "*"
+    };
+  }
+
+  rpc UpdateContact(UpdateContactRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      patch: "/v1/users/contact"
+      body: "*"
+    };
+  }
+
+  rpc GetUserByEmailOrPhone(EmailOrPhoneRequest) returns (UserResponse) {
+    option (google.api.http) = {
+      get: "/v1/users/get"
+    };
+  }
+}
