@@ -31,7 +31,7 @@ func (s *UserServiceServer) UpdateUser(ctx context.Context, req *user.UpdateUser
 	if err != nil {
 		return nil, err
 	}
-	// optional: fetch user again
+	
 	return &user.UserResponse{User: &user.User{Id: req.Id}}, nil
 }
 
