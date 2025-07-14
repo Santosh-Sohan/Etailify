@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	user "github.com/Santosh-Sohan/user-service/api"
 	"github.com/Santosh-Sohan/user-service/db"
 	"github.com/gocql/gocql"
@@ -57,13 +59,28 @@ func (r *cassandraUserRepository) UnblockUser(id string) error {
 
 func (r *cassandraUserRepository) GetUserByEmailOrPhone(phone, email string) (*user.User, error) {
 	var u user.User
-	q := `SELECT id, first_name, last_name, gender, date_of_birth, phone_number, email, is_blocked
-	      FROM users WHERE phone_number = ? OR email = ? LIMIT 1`
-	err := db.Session.Query(q, phone, email).Consistency(gocql.One).Scan(
-		&u.Id, &u.FirstName, &u.LastName, &u.Gender, &u.DateOfBirth, &u.PhoneNumber, &u.Email, &u.IsBlocked,
-	)
-	if err != nil {
-		return nil, err
+
+	if phone != "" {
+		query := "SELECT id, first_name, last_name, gender, date_of_birth, phone_number, email, is_blocked FROM users WHERE phone_number = ? LIMIT 1"
+		err := db.Session.Query(query, phone).Consistency(gocql.One).Scan(
+			&u.Id, &u.FirstName, &u.LastName, &u.Gender, &u.DateOfBirth,
+			&u.PhoneNumber, &u.Email, &u.IsBlocked,
+		)
+		if err == nil {
+			return &u, nil
+		}
 	}
-	return &u, nil
+
+	if email != "" {
+		query := "SELECT id, first_name, last_name, gender, date_of_birth, phone_number, email, is_blocked FROM users WHERE email = ? LIMIT 1"
+		err := db.Session.Query(query, email).Consistency(gocql.One).Scan(
+			&u.Id, &u.FirstName, &u.LastName, &u.Gender, &u.DateOfBirth,
+			&u.PhoneNumber, &u.Email, &u.IsBlocked,
+		)
+		if err == nil {
+			return &u, nil
+		}
+	}
+
+	return nil, fmt.Errorf("user not found")
 }

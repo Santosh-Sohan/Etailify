@@ -1,0 +1,18 @@
+CREATE KEYSPACE IF NOT EXISTS userks
+WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'};
+
+USE userks;
+
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY,
+  first_name TEXT,
+  last_name TEXT,
+  gender TEXT,
+  date_of_birth TEXT,
+  phone_number TEXT,
+  email TEXT,
+  is_blocked BOOLEAN
+);
+
+CREATE INDEX IF NOT EXISTS users_phone_idx ON users (phone_number);
+CREATE INDEX IF NOT EXISTS users_email_idx ON users (email);

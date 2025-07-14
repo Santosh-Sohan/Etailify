@@ -10,8 +10,8 @@ import (
 var Session *gocql.Session
 
 func InitCassandra() {
-	cluster := gocql.NewCluster("127.0.0.1") // update if using remote
-	cluster.Keyspace = "user_service"
+	cluster := gocql.NewCluster("127.0.0.1")
+	cluster.Keyspace = "userks"
 	cluster.Consistency = gocql.Quorum
 	cluster.ConnectTimeout = time.Second * 10
 

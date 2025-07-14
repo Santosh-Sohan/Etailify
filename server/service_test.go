@@ -17,7 +17,7 @@ import (
 	"github.com/Santosh-Sohan/user-service/db"
 )
 
-// ========== MOCK REPOSITORY FOR UNIT TEST ==========
+//MOCK REPOSITORY FOR UNIT TEST
 
 type mockRepo struct{}
 
@@ -30,9 +30,10 @@ func (m *mockRepo) GetUserByEmailOrPhone(phone, email string) (*user.User, error
 	return &user.User{Id: "mock-id", FirstName: "Mock"}, nil
 }
 
-// ========== UNIT TEST ==========
+// UNIT TEST
 
 func TestUnit_CreateUser(t *testing.T) {
+	db.InitCassandra()
 	svc := &service.UserServiceServer{Repo: &mockRepo{}}
 	req := &user.CreateUserRequest{
 		User: &user.User{
@@ -48,11 +49,9 @@ func TestUnit_CreateUser(t *testing.T) {
 	assert.Equal(t, "Unit", resp.User.FirstName)
 }
 
-// ========== INTEGRATION TEST (Real Cassandra) ==========
+// INTEGRATION TEST (Cassandra db)
 
 func TestIntegration_CreateAndFetchUser(t *testing.T) {
-	db.InitCassandra() // assumes you already have this function to connect to DB
-	defer db.Session.Close()
 
 	svc := &service.UserServiceServer{Repo: repository.NewUserRepository()}
 
@@ -70,6 +69,8 @@ func TestIntegration_CreateAndFetchUser(t *testing.T) {
 	_, err := svc.CreateUser(context.Background(), &user.CreateUserRequest{User: newUser})
 	assert.NoError(t, err)
 
+	time.Sleep(1 * time.Second)
+
 	resp, err := svc.GetUserByEmailOrPhone(context.Background(), &user.EmailOrPhoneRequest{
 		PhoneNumber: newUser.PhoneNumber,
 	})
@@ -77,11 +78,8 @@ func TestIntegration_CreateAndFetchUser(t *testing.T) {
 	assert.Equal(t, "Integration", resp.User.FirstName)
 }
 
-// ========== BENCHMARK: gRPC vs REST ==========
-
+// BENCHMARK: gRPC vs REST
 func Benchmark_gRPC_CreateUser(b *testing.B) {
-	db.InitCassandra()
-	defer db.Session.Close()
 
 	svc := &service.UserServiceServer{Repo: repository.NewUserRepository()}
 	ctx := context.Background()
@@ -99,8 +97,8 @@ func Benchmark_gRPC_CreateUser(b *testing.B) {
 }
 
 func Benchmark_REST_CreateUser(b *testing.B) {
-	go main()                   // start server
-	time.Sleep(2 * time.Second) // wait for it to start
+	go main() // Start the REST server in a goroutine
+	time.Sleep(2 * time.Second)
 
 	url := "http://localhost:8080/v1/users"
 
@@ -118,4 +116,5 @@ func Benchmark_REST_CreateUser(b *testing.B) {
 		body, _ := json.Marshal(userPayload)
 		_, _ = http.Post(url, "application/json", bytes.NewReader(body))
 	}
+	db.Session.Close()
 }
