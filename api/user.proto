@@ -1,20 +1,40 @@
 syntax = "proto3";
-
 package user;
-option go_package = "github.com/Santosh-Sohan/user-service/api;user";
+option go_package = "github.com/Santosh-Sohan/user-service/gen/go/api/user;user";
 
+import "buf/validate/validate.proto";
 import "google/api/annotations.proto";
 
 message User {
   string id = 1;
-  string first_name = 2;
-  string last_name = 3;
-  string gender = 4;
-  string date_of_birth = 5;
-  string phone_number = 6;
-  string email = 7;
+
+  string first_name = 2 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 50
+  }];
+
+  string last_name = 3 [(buf.validate.field).string = {
+    min_len: 1,
+    max_len: 50
+  }];
+
+  string gender = 4 [(buf.validate.field).string = {
+    in: "male,female,other"
+  }];
+
+  string date_of_birth = 5 [(buf.validate.field).string = {
+    pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+  }];
+
+  string phone_number = 6 [(buf.validate.field).string = {
+    pattern: "^\\+91[0-9]{10}$"
+  }];
+
+  string email = 7 [(buf.validate.field).string.email = true];
+
   bool is_blocked = 8;
 }
+
 
 message CreateUserRequest {
   User user = 1;

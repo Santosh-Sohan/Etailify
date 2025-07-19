@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package order;
+option go_package = "github.com/Santosh-Sohan/user-service/gen/go/api/order;order";
+
+import "google/api/annotations.proto";
+import "api/user.proto";
+
+message Order {
+  string id = 1;
+  user.User user = 2; 
+  string product_name = 3;
+  int32 quantity = 4;
+  float total_price = 5;
+}
+
+message CreateOrderRequest {
+  Order order = 1;
+}
+
+message GetOrdersByUserRequest {
+  user.UserIdRequest user_id = 1;
+}
+
+message OrderResponse {
+  Order order = 1;
+}
+
+message OrdersResponse {
+  repeated Order orders = 1;
+}
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (OrderResponse) {
+    option (google.api.http) = {
+      post: "/v1/orders"
+      body: "order"
+    };
+  }
+
+  rpc GetOrdersByUser(GetOrdersByUserRequest) returns (OrdersResponse) {
+    option (google.api.http) = {
+      get: "/v1/orders/by_user"
+    };
+  }
+}
